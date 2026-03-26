@@ -72,3 +72,28 @@ def scale_data(X_train, X_val, X_test):
     X_test_s = scaler.transform(X_test)
     joblib.dump(scaler, "models/scaler.pkl")
     return X_train_s, X_val_s, X_test_s
+
+
+def run_pca_analysis(X_train_scaled, y_train):
+    pca = PCA()
+    pca_data = pca.fit_transform(X_train_scaled)
+
+    # 1. Scree Plot
+    plt.figure(figsize=(10, 5))
+    plt.plot(np.cumsum(pca.explained_variance_ratio_), marker='o')
+    plt.title('Cumulative Explained Variance (Scree Plot)')
+    plt.xlabel('Number of Components')
+    plt.ylabel('Variance Explained')
+    plt.grid()
+    plt.savefig('pca_scree_plot.png')
+
+    # 2. 2D Scatter Plot
+    plt.figure(figsize=(10, 7))
+    sns.scatterplot(x=pca_data[:, 0], y=pca_data[:, 1], hue=y_train, alpha=0.3)
+    plt.title('PCA 2D Projection of Weather Data')
+    plt.xlabel('PC1')
+    plt.ylabel('PC2')
+    plt.savefig('pca_2d_projection.png')
+
+    print(f"PCA plots saved. Top 2 components explain {sum(pca.explained_variance_ratio_[:2]) * 100:.2f}% of variance.")
+    return pca

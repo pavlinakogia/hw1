@@ -1,36 +1,71 @@
 import pandas as pd
 import joblib
 import os
-from src.preprocessing import *
-from src.train_classical import *
-from src.train_neural import *
-from src.evaluate import *
+import shutil
+from src.preprocessing import (
+    prepare_dataset, feature_engineering, split_data,
+    handle_missing, handle_outliers_and_encode, scale_data
+)
+from src.train_classical import train_classical_model
+from src.train_neural import train_neural_network
+from src.evaluate import run_pca_analysis, evaluate_and_compare, designate_best_model
 
-if not os.path.exists("models"): os.makedirs("models")
 
-# 1. Load & Preprocess
-df = pd.read_csv("data/dataset.csv")
-df = prepare_dataset(df)
-df = feature_engineering(df)
-X_train, X_val, X_test, y_train, y_val, y_test = split_data(df)
-X_train, X_val, X_test = handle_missing(X_train, X_val, X_test)
-X_train, X_val, X_test = handle_outliers_and_encode(X_train, X_val, X_test)
-X_train_s, X_val_s, X_test_s = scale_data(X_train, X_val, X_test)
+def main():
+    # Δημιουργία φακέλων αν δεν υπάρχουν
+    if not os.path.exists("models"):
+        os.makedirs("models")
 
-# 2. PCA
-run_pca(X_train_s, y_train)
+    print("--- 1. Data Loading & Preprocessing ---")
+    # Φόρτωση - Βεβαιώσου ότι το αρχείο είναι στο data/dataset.csv
+    try:
+        df = pd.read_csv("data/dataset.csv")
+    except FileNotFoundError:
+        print("Error: dataset.csv not found in data/ folder. Loading from current directory...")
+        df = pd.read_csv("dataset.csv")
 
-# 3. Training
-rf_model = train_random_forest(X_train_s, y_train)
-lr_model = train_logistic_regression(X_train_s, y_train)
-nn_model = train_neural_network(X_train_s, y_train, X_val_s, y_val)
+    # Pipeline Προεπεξεργασίας
+    df = prepare_dataset(df)
+    df = feature_engineering(df)
 
-# 4. Evaluation & Best Model Choice
-acc_rf = evaluate_model(rf_model, X_test_s, y_test, "Random Forest")
-acc_nn = evaluate_model(nn_model, X_test_s, y_test, "Neural Network")
+    # Το κρίσιμο Split (80/10/10)
+    X_train, X_val, X_test, y_train, y_val, y_test = split_data(df)
 
-best_model = rf_model if acc_rf >= acc_nn else nn_model
-joblib.dump(best_model, "models/best_model.pkl")
-joblib.dump(rf_model, "models/classical_model.pkl")
+    # Imputation, Encoding & Scaling (Derived from Train only)
+    X_train, X_val, X_test = handle_missing(X_train, X_val, X_test)
+    X_train, X_val, X_test = handle_outliers_and_encode(X_train, X_val, X_test)
+    X_train_s, X_val_s, X_test_s = scale_data(X_train, X_val, X_test)
 
-print(f"\nBest model saved: {'Random Forest' if acc_rf >= acc_nn else 'Neural Network'}")
+    print("--- 2. PCA Analysis (Task 2 & 5) ---")
+    # Εκτέλεση PCA και αποθήκευση γραφημάτων
+    run_pca_analysis(X_test_s, y_test)
+
+    print("--- 3. Training Models (Task 3) ---")
+    # Εκπαίδευση Classical (με GridSearchCV / Tuning)
+    rf_model = train_classical_model(X_train_s, y_train)
+
+    # Εκπαίδευση Neural Network (με Early Stopping & NNWrapper)
+    nn_wrapper = train_neural_network(X_train_s, y_train, X_val_s, y_val)
+
+    print("--- 4. Evaluation & Model Comparison (Task 4 & 6) ---")
+    # Δημιουργούμε το λεξικό για τη σύγκριση
+    models_to_compare = {
+        "Classical": rf_model,
+        "Neural": nn_wrapper
+    }
+
+    # Side-by-side σύγκριση, metrics και γραφήματα
+    results_df = evaluate_and_compare(models_to_compare, X_test_s, y_test)
+
+    print("--- 5. Designating Best Model (Task 4) ---")
+    # Επιλογή νικητή και αποθήκευση ως best_model.pkl
+    best_model_name = designate_best_model(results_df, models_to_compare)
+
+    print(f"\n✅ Pipeline completed successfully!")
+    print(f"✅ Best Model: {best_model_name}")
+    print(f"✅ Scaler saved at models/scaler.pkl")
+    print(f"✅ Figures saved in models/ folder")
+
+
+if __name__ == "__main__":
+    main()
