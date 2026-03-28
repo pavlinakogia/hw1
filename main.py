@@ -36,6 +36,8 @@ def main():
     X_train, X_val, X_test = handle_outliers_and_encode(X_train, X_val, X_test)
     X_train_s, X_val_s, X_test_s = scale_data(X_train, X_val, X_test)
 
+    joblib.dump(X_train.columns.tolist(), "models/feature_names.pkl")
+
     print("--- 2. PCA Analysis (Task 2 & 5) ---")
     # Εκτέλεση PCA και αποθήκευση γραφημάτων
     run_pca_analysis(X_test_s, y_test)
