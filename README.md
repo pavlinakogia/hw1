@@ -54,19 +54,27 @@
 Το μοντέλο που αποθηκεύτηκε ως `best_model.pkl` είναι το **Neural Network**.
 **Αιτιολόγηση:** Η επιλογή βασίστηκε πρωτίστως στο **F1-Score (0.6351)** και το **ROC-AUC (0.8609)**. Σε ένα imbalanced dataset όπως αυτό της βροχής (όπου οι μέρες χωρίς βροχή είναι πλειοψηφία), το F1-Score αποτελεί το πλέον αξιόπιστο κριτήριο καθώς ισορροπεί την ακρίβεια των προβλέψεων (Precision) με την ικανότητα εντοπισμού των πραγματικών περιπτώσεων βροχής (Recall).
 
-## 7. Bonus: Interactive Web UI (Task 6)
-Έχει αναπτυχθεί ένα πλήρως διαδραστικό Web UI χρησιμοποιώντας το **Streamlit** (στο αρχείο `src/api.py`). 
-Το UI επιτρέπει στον χρήστη να εισάγει μετεωρολογικά δεδομένα μέσω sliders και inputs, τα οποία περνούν αυτόματα από τον scaler και το feature engineering pipeline για να παραχθεί η τελική πρόβλεψη σε πραγματικό χρόνο από το `best_model.pkl`.
-
-## 8. Installation & Execution
+## 7. Installation & Execution
 1. **Clone the repository:**
    ```bash
    git clone [https://github.com/pavlinakogia/hw1]
    cd hw1
 2. **Install dependencies:**
+   ```bash
    pip install -r requirements.txt
+
 3. **Run the core pipeline (Preprocessing, Training, Evaluation):**
+   ```bash
    python main.py
 
-4. **Run the Interactive UI (Bonus Task):**
-   streamlit run api.py
+4. **Run the REST API (Bonus Task):**
+   ```bash
+   python api.py
+   
+Μόλις ξεκινήσει ο server, ανοίξτε τον browser σας στη διεύθυνση http://127.0.0.1:8000/docs για να δοκιμάσετε το endpoint /predict μέσω του Swagger UI.
+
+5. **Run the interactive app Streamlit UI (Additional Task):**
+   ```bash
+   streamlit run app_ui.py
+   
+Αυτό θα ανοίξει αυτόματα μια νέα καρτέλα στον browser σας, όπου μπορείτε να πειράξετε τις τιμές του καιρού με sliders και να δείτε την πρόβλεψη του μοντέλου σε πραγματικό χρόνο.

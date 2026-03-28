@@ -1,107 +1,63 @@
-import streamlit as st
-import joblib
+from fastapi import FastAPI
+from pydantic import BaseModel
 import pandas as pd
-import numpy as np
+import joblib
+import uvicorn
+import os
 
-# --- 1. Ρύθμιση Σελίδας ---
-st.set_page_config(page_title="Weather Predictor", page_icon="🌤️")
+# Δημιουργία της εφαρμογής
+app = FastAPI(title="Weather Prediction API", description="API για πρόβλεψη βροχόπτωσης")
 
-st.title("🌤️ Πρόβλεψη Βροχής για Αύριο")
-st.markdown("Συμπληρώστε τα παρακάτω στοιχεία για να μάθετε την πιθανότητα βροχής.")
+# ---------------------------------------------------------
+# Βρίσκουμε τον κεντρικό φάκελο (hw1) δυναμικά
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
-# --- 2. Φόρτωση Μοντέλων ---
-@st.cache_resource
-def load_assets():
-    model = joblib.load("../models/best_model.pkl")
-    scaler = joblib.load("../models/scaler.pkl")
-    features = joblib.load("../models/feature_names.pkl")
-    return model, scaler, features
+# Φόρτωση του μοντέλου, του scaler και των ονομάτων των στηλών
+model = joblib.load(os.path.join(BASE_DIR, "models", "best_model.pkl"))
+scaler = joblib.load(os.path.join(BASE_DIR, "models", "scaler.pkl"))
+feature_names = joblib.load(os.path.join(BASE_DIR, "models", "feature_names.pkl"))
+# ---------------------------------------------------------
 
 
-model, scaler, feature_names = load_assets()
+# Ορισμός της μορφής των δεδομένων εισόδου (Pydantic)
+class WeatherInput(BaseModel):
+    data: dict
 
-# --- 3. Φόρμα Εισαγωγής ---
-st.subheader("📍 Στοιχεία Καιρού")
+@app.get("/")
+def read_root():
+    return {"message": "Το Weather API λειτουργεί! Πηγαίνετε στο /docs για δοκιμή."}
 
-col1, col2 = st.columns(2)
+@app.post("/predict")
+def predict_weather(input_data: WeatherInput):
+    # 1. Μετατροπή των δεδομένων του χρήστη σε DataFrame
+    df_input = pd.DataFrame([input_data.data])
 
-with col1:
-    month = st.selectbox("Μήνας", range(1, 13), index=5)
-    min_temp = st.number_input("Ελάχιστη Θερμοκρασία (°C)", value=15.0)
-    max_temp = st.number_input("Μέγιστη Θερμοκρασία (°C)", value=25.0)
+    # 2. Αν υπάρχουν κατηγορικές μεταβλητές, τις κάνουμε One-Hot Encode
+    df_encoded = pd.get_dummies(df_input)
 
-    rain_today = st.selectbox("Έβρεξε σήμερα;", ["Όχι", "Ναι"])
+    # 3. Ευθυγράμμιση με τις στήλες που "ξέρει" το μοντέλο (βάζει 0 όπου λείπουν δεδομένα)
+    df_final = df_encoded.reindex(columns=feature_names, fill_value=0)
 
-    # Υπό συνθήκες εμφάνιση όγκου βροχής
-    if rain_today == "Ναι":
-        rainfall = st.number_input("Όγκος Βροχής Σήμερα (mm)", value=5.0, min_value=0.1)
-    else:
-        rainfall = 0.0
-
-with col2:
-    humidity_9am = st.slider("Υγρασία στις 9πμ (%)", 0, 100, 60)
-    humidity_3pm = st.slider("Υγρασία στις 3μμ (%)", 0, 100, 50)
-    pressure_9am = st.number_input("Ατμοσφαιρική Πίεση 9πμ (hPa)", value=1015.0)
-    pressure_3pm = st.number_input("Ατμοσφαιρική Πίεση 3μμ (hPa)", value=1012.0)
-    wind_speed = st.number_input("Ταχύτητα Ανέμου (km/h)", value=35.0)
-
-# --- 4. Πρόβλεψη & Λογική ---
-if st.button("🔮 Πρόβλεψη", use_container_width=True):
-
-    # Γεμίζουμε τα δεδομένα με φυσιολογικές τιμές και
-    # υπολογίζουμε τα Feature Engineering (TempRange, Diff) που ζητάει το μοντέλο
-    base_data = {
-        'MinTemp': min_temp,
-        'MaxTemp': max_temp,
-        'Rainfall': rainfall,
-        'Evaporation': 5.0,  # Τυπική τιμή εξάτμισης
-        'Sunshine': 8.0,  # Τυπική τιμή ηλιοφάνειας
-        'WindGustSpeed': wind_speed,
-        'WindSpeed9am': wind_speed * 0.4,
-        'WindSpeed3pm': wind_speed * 0.6,
-        'Humidity9am': humidity_9am,
-        'Humidity3pm': humidity_3pm,
-        'Pressure9am': pressure_9am,
-        'Pressure3pm': pressure_3pm,
-        'Cloud9am': 4.0,
-        'Cloud3pm': 4.0,
-        'Temp9am': min_temp + 5,
-        'Temp3pm': max_temp - 2,
-        'RainToday': 1 if rain_today == "Ναι" else 0,
-        'Month': month,
-        'TempRange': max_temp - min_temp,
-        'HumidityDiff': humidity_3pm - humidity_9am,
-        'PressureDiff': pressure_3pm - pressure_9am
-    }
-
-    df_input = pd.DataFrame([base_data])
-
-    # Ευθυγράμμιση με τα features της εκπαίδευσης
-    df_final = df_input.reindex(columns=feature_names, fill_value=0)
-
-    # Scaling & Predict
+    # 4. Scaling
     X_scaled = scaler.transform(df_final)
+
+    # 5. Πρόβλεψη και Πιθανότητα
     prediction = model.predict(X_scaled)[0]
-    prob = model.predict_proba(X_scaled)[0][1]
 
-    # --- 5. Αποτελέσματα ---
-    st.divider()
+    # Ελέγχουμε αν το μοντέλο υποστηρίζει predict_proba (όπως το Νευρωνικό)
+    prob = None
+    if hasattr(model, "predict_proba"):
+        prob = model.predict_proba(X_scaled)[0][1]
 
-    if prob >= 0.70:
-        st.error(f"### 🌧️ Πρόβλεψη: **ΒΡΟΧΗ** (Πιθανότητα: {prob:.1%})")
-        # Εντυπωσιακό κεντραρισμένο Emoji βροχής
-        st.markdown("<h1 style='text-align: center; font-size: 80px;'>🌧️ ⛈️ ☔</h1>", unsafe_allow_html=True)
-        st.info("Υψηλή πιθανότητα βροχόπτωσης. Ετοιμαστείτε για κακοκαιρία!")
+    # 6. Δημιουργία της απάντησης (JSON)
+    result = {
+        "prediction": int(prediction),
+        "label": "Rain" if prediction == 1 else "No Rain"
+    }
+    if prob is not None:
+        result["probability_of_rain"] = round(float(prob), 4)
 
-    elif prob <= 0.30:
-        st.success(f"### ☀️ Πρόβλεψη: **ΛΙΑΚΑΔΑ** (Πιθανότητα βροχής: {prob:.1%})")
-        # Εντυπωσιακό κεντραρισμένο Emoji ήλιου
-        st.markdown("<h1 style='text-align: center; font-size: 80px;'>☀️ 🕶️ 🌞</h1>", unsafe_allow_html=True)
-        st.info("Χαμηλή πιθανότητα βροχής. Υπέροχος καιρός για βόλτα!")
+    return result
 
-    else:
-        st.warning(f"### ⛅ Πρόβλεψη: **ΑΣΤΑΘΕΙΑ** (Πιθανότητα βροχής: {prob:.1%})")
-        # Εντυπωσιακό κεντραρισμένο Emoji συννεφιάς
-        st.markdown("<h1 style='text-align: center; font-size: 80px;'>⛅ 🌥️ ☁️</h1>", unsafe_allow_html=True)
-        st.info("Ο καιρός είναι ασταθής. Καλό είναι να έχετε μια ομπρέλα μαζί σας.")
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)
