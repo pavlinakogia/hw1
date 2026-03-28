@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 
-# 1. Ορίζουμε την κλάση ΕΞΩ από τη συνάρτηση (Top Level)
+# 1. Ορίζουμε την κλάση
 class NeuralNet(nn.Module):
     def __init__(self, input_dim):
         super().__init__()
@@ -23,7 +23,7 @@ class NeuralNet(nn.Module):
         return self.model(x)
 
 
-# 2. Ορίζουμε τον Wrapper ΕΞΩ από τη συνάρτηση για να είναι Picklable
+# 2. Ορίζουμε τον Wrapper
 class NNWrapper:
     def __init__(self, model):
         self.model = model
@@ -89,5 +89,4 @@ def train_neural_network(X_train, y_train, X_val, y_val):
     # Φόρτωση των καλύτερων βαρών
     model.load_state_dict(torch.load("models/neural_network.pt", weights_only=True))
 
-    # Επιστρέφουμε τον Wrapper (τώρα είναι πλέον picklable!)
     return NNWrapper(model)

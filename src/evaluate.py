@@ -15,7 +15,6 @@ from sklearn.decomposition import PCA
 def run_pca_analysis(X_test_scaled, y_test):
     """
     Task 2 & 5: PCA Insights.
-    Δημιουργεί Scree Plot και 2D Projection.
     """
     print("\n--- Running PCA Analysis ---")
     pca = PCA(random_state=42)
@@ -42,7 +41,7 @@ def run_pca_analysis(X_test_scaled, y_test):
 
 def plot_evaluation_graphs(y_test, y_pred, y_probs, name):
     """
-    Δημιουργεί Confusion Matrix και ROC Curve για κάθε μοντέλο.
+    Confusion Matrix και ROC Curve για κάθε μοντέλο.
     """
     # 1. Confusion Matrix
     cm = confusion_matrix(y_test, y_pred)
@@ -113,10 +112,9 @@ def designate_best_model(df_results, models_dict):
     best_name = best_row['Model']
     best_model_obj = models_dict[best_name]
 
-    print(f"\n🏆 The Best Model is: {best_name} with F1-Score: {best_row['F1-Score']:.4f}")
+    print(f"\n The Best Model is: {best_name} with F1-Score: {best_row['F1-Score']:.4f}")
 
     # Αποθήκευση ως best_model.pkl
-    # Χρησιμοποιούμε joblib για να σώσουμε το αντικείμενο (είτε RF είτε NNWrapper)
     joblib.dump(best_model_obj, "models/best_model.pkl")
     print(f"Successfully saved {best_name} as models/best_model.pkl")
 

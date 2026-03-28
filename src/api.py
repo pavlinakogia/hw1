@@ -21,7 +21,7 @@ def load_assets():
 
 model, scaler, feature_names = load_assets()
 
-# --- 3. Δυναμική Φόρμα Εισαγωγής ---
+# --- 3. Φόρμα Εισαγωγής ---
 st.subheader("📍 Στοιχεία Καιρού")
 
 col1, col2 = st.columns(2)
@@ -33,7 +33,7 @@ with col1:
 
     rain_today = st.selectbox("Έβρεξε σήμερα;", ["Όχι", "Ναι"])
 
-    # [ΖΗΤΟΥΜΕΝΟ 2] Υπό συνθήκες εμφάνιση όγκου βροχής!
+    # Υπό συνθήκες εμφάνιση όγκου βροχής
     if rain_today == "Ναι":
         rainfall = st.number_input("Όγκος Βροχής Σήμερα (mm)", value=5.0, min_value=0.1)
     else:
@@ -49,9 +49,8 @@ with col2:
 # --- 4. Πρόβλεψη & Λογική ---
 if st.button("🔮 Πρόβλεψη", use_container_width=True):
 
-    # [ΔΙΟΡΘΩΣΗ ΓΙΑ ΤΟ 100% BUG]
-    # Γεμίζουμε τα δεδομένα με φυσιολογικές τιμές (όχι μηδενικά) και
-    # υπολογίζουμε τα Feature Engineering (TempRange, Diff) που ζητάει το μοντέλο!
+    # Γεμίζουμε τα δεδομένα με φυσιολογικές τιμές και
+    # υπολογίζουμε τα Feature Engineering (TempRange, Diff) που ζητάει το μοντέλο
     base_data = {
         'MinTemp': min_temp,
         'MaxTemp': max_temp,
@@ -86,7 +85,7 @@ if st.button("🔮 Πρόβλεψη", use_container_width=True):
     prediction = model.predict(X_scaled)[0]
     prob = model.predict_proba(X_scaled)[0][1]
 
-    # --- 5. Αποτελέσματα με [ΖΗΤΟΥΜΕΝΟ 3] (Υπό συνθήκες εικονίδια) ---
+    # --- 5. Αποτελέσματα ---
     st.divider()
 
     if prob >= 0.70:

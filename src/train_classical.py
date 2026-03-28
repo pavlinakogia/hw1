@@ -21,7 +21,7 @@ def train_classical_model(X_train, y_train):
     best_model = grid.best_estimator_
     print(f"Best Parameters: {grid.best_params_}")
 
-    # Αποθήκευση (Απαίτηση Task 3)
+    # Αποθήκευση (Task 3)
     joblib.dump(best_model, "models/classical_model.pkl")
     print("Classical model saved to models/classical_model.pkl")
 
