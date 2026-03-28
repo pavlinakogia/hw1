@@ -1,7 +1,9 @@
 # Homework 1: From Data to Intelligent Model
-**Course:** AI Hands-on , NTUA  
+**Course:** AI Hands-on , NTUA 
 **Domain:** Weather Prediction (Rain in Australia)
+
 **Name:** Pavlina Kogia
+
 **ID:** 09325011
 
 ## 1. Problem & Dataset Description
