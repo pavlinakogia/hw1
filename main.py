@@ -12,12 +12,12 @@ from src.evaluate import run_pca_analysis, evaluate_and_compare, designate_best_
 
 
 def main():
-    # Δημιουργία φακέλων αν δεν υπάρχουν
+    # Δημιουργία φακέλων
     if not os.path.exists("models"):
         os.makedirs("models")
 
     print("--- 1. Data Loading & Preprocessing ---")
-    # Φόρτωση - Βεβαιώσου ότι το αρχείο είναι στο data/dataset.csv
+
     try:
         df = pd.read_csv("data/dataset.csv")
     except FileNotFoundError:
@@ -28,7 +28,7 @@ def main():
     df = prepare_dataset(df)
     df = feature_engineering(df)
 
-    # Το κρίσιμο Split (80/10/10)
+    # Split (80/10/10)
     X_train, X_val, X_test, y_train, y_val, y_test = split_data(df)
 
     # Imputation, Encoding & Scaling (Derived from Train only)
@@ -50,7 +50,7 @@ def main():
     nn_wrapper = train_neural_network(X_train_s, y_train, X_val_s, y_val)
 
     print("--- 4. Evaluation & Model Comparison (Task 4 & 6) ---")
-    # Δημιουργούμε το λεξικό για τη σύγκριση
+
     models_to_compare = {
         "Classical": rf_model,
         "Neural": nn_wrapper
@@ -60,13 +60,13 @@ def main():
     results_df = evaluate_and_compare(models_to_compare, X_test_s, y_test)
 
     print("--- 5. Designating Best Model (Task 4) ---")
-    # Επιλογή νικητή και αποθήκευση ως best_model.pkl
+
     best_model_name = designate_best_model(results_df, models_to_compare)
 
-    print(f"\n✅ Pipeline completed successfully!")
-    print(f"✅ Best Model: {best_model_name}")
-    print(f"✅ Scaler saved at models/scaler.pkl")
-    print(f"✅ Figures saved in models/ folder")
+    print(f"\n Pipeline completed successfully!")
+    print(f" Best Model: {best_model_name}")
+    print(f" Scaler saved at models/scaler.pkl")
+    print(f" Figures saved in models/ folder")
 
 
 if __name__ == "__main__":
