@@ -1,5 +1,6 @@
 # Homework 1: From Data to Intelligent Model
 **Course:** AI Hands-on , NTUA 
+
 **Domain:** Weather Prediction (Rain in Australia)
 
 **Name:** Pavlina Kogia
