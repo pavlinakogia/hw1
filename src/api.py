@@ -40,7 +40,7 @@ def predict_weather(input_data: WeatherInput):
     # 5. Πρόβλεψη και Πιθανότητα
     prediction = model.predict(X_scaled)[0]
 
-    # Ελέγχουμε αν το μοντέλο υποστηρίζει predict_proba
+    # Ελέγχουμε αν το μοντέλο υποστηρίζει predict_probapython
     prob = None
     if hasattr(model, "predict_proba"):
         prob = model.predict_proba(X_scaled)[0][1]

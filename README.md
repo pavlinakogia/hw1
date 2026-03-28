@@ -75,6 +75,6 @@
 
 5. **Run the interactive app Streamlit UI (Additional Task):**
    ```bash
-   streamlit run app_ui.py
+   streamlit run src/app_ui.py
    
 Αυτό θα ανοίξει αυτόματα μια νέα καρτέλα στον browser σας, όπου μπορείτε να πειράξετε τις τιμές του καιρού με sliders και να δείτε την πρόβλεψη του μοντέλου σε πραγματικό χρόνο.
