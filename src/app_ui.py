@@ -3,14 +3,14 @@ import joblib
 import pandas as pd
 import numpy as np
 
-# --- 1. Ρύθμιση Σελίδας ---
+# Ρύθμιση Σελίδας
 st.set_page_config(page_title="Weather Predictor", page_icon="🌤️")
 
 st.title("🌤️ Πρόβλεψη Βροχής για Αύριο")
 st.markdown("Συμπληρώστε τα παρακάτω στοιχεία για να μάθετε την πιθανότητα βροχής.")
 
 
-# --- 2. Φόρτωση Μοντέλων ---
+# Φόρτωση Μοντέλων
 @st.cache_resource
 def load_assets():
     model = joblib.load("../models/best_model.pkl")
@@ -21,7 +21,7 @@ def load_assets():
 
 model, scaler, feature_names = load_assets()
 
-# --- 3. Φόρμα Εισαγωγής ---
+# 3. Φόρμα Εισαγωγής
 st.subheader("📍 Στοιχεία Καιρού")
 
 col1, col2 = st.columns(2)
@@ -46,7 +46,7 @@ with col2:
     pressure_3pm = st.number_input("Ατμοσφαιρική Πίεση 3μμ (hPa)", value=1012.0)
     wind_speed = st.number_input("Ταχύτητα Ανέμου (km/h)", value=35.0)
 
-# --- 4. Πρόβλεψη & Λογική ---
+# 4. Πρόβλεψη & Λογική
 if st.button("🔮 Πρόβλεψη", use_container_width=True):
 
     # Γεμίζουμε τα δεδομένα με φυσιολογικές τιμές και
@@ -85,7 +85,7 @@ if st.button("🔮 Πρόβλεψη", use_container_width=True):
     prediction = model.predict(X_scaled)[0]
     prob = model.predict_proba(X_scaled)[0][1]
 
-    # --- 5. Αποτελέσματα ---
+    # 5. Αποτελέσματα
     st.divider()
 
     if prob >= 0.70:

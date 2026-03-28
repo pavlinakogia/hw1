@@ -8,16 +8,12 @@ import os
 # Δημιουργία της εφαρμογής
 app = FastAPI(title="Weather Prediction API", description="API για πρόβλεψη βροχόπτωσης")
 
-# ---------------------------------------------------------
-# Βρίσκουμε τον κεντρικό φάκελο (hw1) δυναμικά
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Φόρτωση του μοντέλου, του scaler και των ονομάτων των στηλών
 model = joblib.load(os.path.join(BASE_DIR, "models", "best_model.pkl"))
 scaler = joblib.load(os.path.join(BASE_DIR, "models", "scaler.pkl"))
 feature_names = joblib.load(os.path.join(BASE_DIR, "models", "feature_names.pkl"))
-# ---------------------------------------------------------
-
 
 # Ορισμός της μορφής των δεδομένων εισόδου (Pydantic)
 class WeatherInput(BaseModel):
@@ -44,7 +40,7 @@ def predict_weather(input_data: WeatherInput):
     # 5. Πρόβλεψη και Πιθανότητα
     prediction = model.predict(X_scaled)[0]
 
-    # Ελέγχουμε αν το μοντέλο υποστηρίζει predict_proba (όπως το Νευρωνικό)
+    # Ελέγχουμε αν το μοντέλο υποστηρίζει predict_proba
     prob = None
     if hasattr(model, "predict_proba"):
         prob = model.predict_proba(X_scaled)[0][1]
